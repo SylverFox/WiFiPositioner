@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.Main">
+   <children>
+      <ChoiceBox fx:id="macChoiceBox" layoutX="14.0" layoutY="14.0" prefWidth="150.0" />
+      <DatePicker fx:id="startdate" layoutX="171.0" layoutY="14.0" promptText="Start date" />
+      <DatePicker fx:id="enddate" layoutX="353.0" layoutY="14.0" promptText="End date" />
+      <Button fx:id="drawButton" layoutX="535.0" layoutY="14.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="55.0" text="Draw" />
+      <Canvas fx:id="canvas" height="340.0" layoutX="14.0" layoutY="46.0" width="578.0" />
+   </children>
+</Pane>
