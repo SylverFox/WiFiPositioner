@@ -8,7 +8,7 @@ import android.os.Bundle;
 /**
  * Created by Joris on 22/05/2014.
  */
-public class GPSHandle extends Thread implements LocationListener {
+public class GPSHandle implements LocationListener {
 
     private DataListener listener;
     private LocationManager locationManager;
@@ -18,8 +18,6 @@ public class GPSHandle extends Thread implements LocationListener {
         this.locationManager = locationManager;
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,this);
     }
-
-    public void run() {}
 
     @Override
     public void onLocationChanged(Location location) {

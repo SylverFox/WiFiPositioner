@@ -7,16 +7,6 @@
     <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Load custom driver"
-            android:id="@+id/loaddriverbutton" android:layout_gravity="center_horizontal"/>
-    <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Unload custom driver"
-            android:id="@+id/unloaddriverbutton" android:layout_gravity="center_horizontal"/>
-    <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:text="Start capture"
             android:id="@+id/startcapturebutton" android:layout_gravity="center_horizontal"/>
     <Button
@@ -28,13 +18,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Location: "
+            android:text="GPS: "
             android:id="@+id/locationtextview" android:layout_gravity="center_horizontal"/>
-    <EditText
+    <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:inputType="textMultiLine"
-            android:ems="10"
-            android:id="@+id/outputfield" android:editable="false" android:enabled="false"/>
+            android:id="@+id/scrollView" android:layout_gravity="center_horizontal" android:fillViewport="false">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/outputfield" android:layout_gravity="center_horizontal"/>
+    </ScrollView>
 </LinearLayout>
 

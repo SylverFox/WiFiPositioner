@@ -7,9 +7,9 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
-
-import java.io.IOException;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements View.OnClickListener,DataListener {
 
@@ -27,15 +27,10 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        tcpDumpHandle = new TcpDumpHandle(this);
         LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         gpsHandle = new GPSHandle(this,locationManager);
         sqLiteHandle = new SQLiteDatabaseHandle(getApplicationContext());
 
-        Button driverloadbutton = (Button)findViewById(R.id.loaddriverbutton);
-        driverloadbutton.setOnClickListener(this);
-        Button driverunloadbutton = (Button)findViewById(R.id.unloaddriverbutton);
-        driverunloadbutton.setOnClickListener(this);
         Button startcapturebutton = (Button)findViewById(R.id.startcapturebutton);
         startcapturebutton.setOnClickListener(this);
         Button stopcapturebutton = (Button)findViewById(R.id.stopcapturebutton);
@@ -46,7 +41,8 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
 
     @Override
     public void onDestroy() {
-        tcpDumpHandle.shutdown();
+        if(tcpDumpHandle != null)
+            tcpDumpHandle.shutdown();
         super.onDestroy();
     }
 
@@ -55,21 +51,20 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
     public void onClick(View view) {
         int id = view.getId();
         switch(id) {
-            case R.id.loaddriverbutton:
-                tcpDumpHandle.loadCustomDriver();
-                break;
-            case R.id.unloaddriverbutton:
-                tcpDumpHandle.unloadCustomDriver();
-                break;
             case R.id.startcapturebutton:
-                tcpDumpHandle.start();
+                if(tcpDumpHandle == null) {
+                    tcpDumpHandle = new TcpDumpHandle(this);
+                    tcpDumpHandle.start();
+                } else {
+                    Toast.makeText(getApplicationContext(),"Capture already started",1000).show();
+                }
+
                 break;
             case R.id.stopcapturebutton:
-                try {
-                    tcpDumpHandle.stopCapture();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if(tcpDumpHandle != null) {
+                    tcpDumpHandle.shutdown();
                 }
+                tcpDumpHandle = null;
                 break;
             default:
                 break;
@@ -82,17 +77,26 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
             return;
         else if(message.isEmpty())
             return;
-        else if(currentLocation == null)
-            return;
 
         message = message.trim();
 
-        String mac = message.trim();
-        String rssi = "";
+        if(currentLocation != null) {
+            // Determine mac and rssi
+            String mac = "";
+            String rssi = "";
+        }
 
-        outputfield.append(message);
-        outputfield.append("MAC: "+mac+" RSSI: "+rssi);
-        sqLiteHandle.addRecord(currentLocation,mac,rssi);
+        final String finalMessage = message+"\n";
+        outputfield.post(new Runnable() {
+            @Override
+            public void run() {
+                outputfield.append(finalMessage);
+                ((ScrollView)findViewById(R.id.scrollView)).fullScroll(View.FOCUS_DOWN);
+            }
+        });
+
+        //outputfield.append("MAC: "+mac+" RSSI: "+rssi);
+        //sqLiteHandle.addRecord(currentLocation,mac,rssi);
     }
 
     @Override

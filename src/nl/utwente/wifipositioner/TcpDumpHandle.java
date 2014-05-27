@@ -1,120 +1,115 @@
 package nl.utwente.wifipositioner;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 /**
  * Created by Joris on 22/05/2014.
  */
 public class TcpDumpHandle extends Thread {
 
-    private final String tcpDumpComm = "/data/local/tcpdump-arm -l -i eth0";
-    private final String loadDriverComm = "/system/bin/sh /data/bcmon/setup.sh";
-    private final String unloadDriverComm = "/system/bin/sh /data/bcmon/unsetup.sh";
+    private final String DEBUG_TAG = "TcpDumpHandle";
+    private final String tcpDumpComm = "./tcpdump-arm -l -i wlan0";
+    private final String toFolder = "cd /data/bcmon";
+    private final String loadDriverComm = "sh setup.sh";
+    private final String unloadDriverComm = "sh unsetup.sh";
 
-    private Process captureProcess;
-    private DataOutputStream dataOut;
+    private Process console;
     private BufferedReader dataIn;
+    private DataOutputStream dataOut;
+    private BufferedReader dataErr;
+
     private DataListener listener;
 
     private boolean continueCapture = false;
-    private boolean driverLoaded = false;
 
     public TcpDumpHandle(DataListener listener) {
         this.listener = listener;
     }
 
     public void run() {
+        Log.d(DEBUG_TAG, "Starting run");
+
+        boolean ok = false;
         try {
-            startCapture();
+            ok = startProcess();
         } catch (IOException e) {
-            continueCapture = false;
+            Log.e(DEBUG_TAG,"Unable to start process");
             e.printStackTrace();
+            ok = false;
+        }
+
+        if(ok) {
+            Log.d(DEBUG_TAG, "Startup done. Device ready");
+            continueCapture = true;
+        } else {
+            Log.e(DEBUG_TAG,"Startup failed. Device not ready");
+            return;
         }
 
         while(continueCapture) {
-            if(dataIn != null) {
-                try {
-                    String line = dataIn.readLine();
-                    if(line != null)
-                        listener.onConsoleMessage(line);
-                } catch (IOException e) {}
-            }
+            try {
+                String line = dataIn.readLine();
+                if(line != null)
+                    listener.onConsoleMessage(line);
+            } catch (IOException e) {}
+        }
+
+        Log.d(DEBUG_TAG,"Stopping process");
+        try {
+            stopProcess();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public void startCapture() throws IOException {
-        captureProcess = Runtime.getRuntime().exec("su");
-        dataOut = new DataOutputStream(captureProcess.getOutputStream());
-        dataIn = new BufferedReader(new InputStreamReader(captureProcess.getInputStream()));
-        //start tcpdump
-        dataOut.writeBytes(tcpDumpComm);
-        dataOut.flush();
+    private boolean startProcess() throws IOException {
+        // Create process and get SU access
+        ProcessBuilder processBuilder = new ProcessBuilder("su");
+        processBuilder.redirectErrorStream(true);
+        console = processBuilder.start();
+
+        // get data streams
+        dataIn = new BufferedReader(new InputStreamReader(console.getInputStream()));
+        dataOut = new DataOutputStream(console.getOutputStream());
+        dataErr = new BufferedReader(new InputStreamReader(console.getErrorStream()));
+
+
+        // run setup scripts
+        writeCommand(toFolder);
+        writeCommand(loadDriverComm);
+        writeCommand("iwconfig wlan0 mode monitor");
+        writeCommand(tcpDumpComm);
+
+        return true;
     }
 
-    public void stopCapture() throws IOException {
-        if(!continueCapture)
-            return;
+    private boolean writeCommand(String command) {
+        boolean output = true;
+        ArrayList<String> outputlist = new ArrayList<String>();
+        try {
+            dataOut.writeBytes(command+"\n");
+            dataOut.flush();
+        } catch (IOException e) {
+            output = false;
+        }
+        return output;
+    }
 
-        dataOut.writeBytes("exit\n");
-        dataOut.flush();
+    private void stopProcess() throws IOException {
+        console.destroy();
         dataOut.close();
-
         dataIn.close();
-
-        captureProcess.destroy();
-
-        //close tcpdump process
-        Process process2 = Runtime.getRuntime().exec("ps tcpdump-arm");
-        BufferedReader in = new BufferedReader(new InputStreamReader(process2.getInputStream()));
-        String temp = in.readLine();
-        temp = in.readLine();
-        temp = temp.replaceAll("^root *([0-9]*).*","$1");
-        int pid = Integer.parseInt(temp);
-        execCommand("kill "+pid);
-
-        continueCapture = false;
-    }
-
-    public void loadCustomDriver() {
-        try {
-            execCommand(loadDriverComm);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        driverLoaded = true;
-    }
-
-    public void unloadCustomDriver() {
-        try {
-            execCommand(unloadDriverComm);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        driverLoaded = false;
-    }
-
-    private void execCommand(String command) throws IOException {
-        Process tempProcess = Runtime.getRuntime().exec("su");
-        DataOutputStream out = new DataOutputStream(tempProcess.getOutputStream());
-        out.writeBytes(command);
-        out.flush();
-        out.writeBytes("exit\n");
-        out.flush();
-        out.close();
-        tempProcess.destroy();
+        dataErr.close();
     }
 
     public void shutdown() {
-        try {
-            stopCapture();
-            unloadCustomDriver();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        continueCapture = false;
     }
+
 }
