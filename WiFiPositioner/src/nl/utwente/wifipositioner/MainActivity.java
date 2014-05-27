@@ -5,6 +5,7 @@ import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ScrollView;
@@ -71,8 +72,10 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
         }
     }
 
+    private int i = 0;
     @Override
     public void onConsoleMessage(String message) {
+        i++;
         if(message == null)
             return;
         else if(message.isEmpty())
@@ -80,28 +83,34 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
 
         message = message.trim();
 
-        if(currentLocation != null) {
-            // Determine mac and rssi
-            String mac = "";
-            String rssi = "";
+        if(currentLocation != null && message.contains("signal") && message.contains("SA")) {
+            Pair<String,String> data = parseLine(message);
+            sqLiteHandle.addRecord(currentLocation,data.first,data.second);
+            if(i%100 == 0)
+                postMessage("MAC: "+data.first+" - RSSI: "+data.second+"\n");
         }
-
-        final String finalMessage = message+"\n";
-        outputfield.post(new Runnable() {
-            @Override
-            public void run() {
-                outputfield.append(finalMessage);
-                ((ScrollView)findViewById(R.id.scrollView)).fullScroll(View.FOCUS_DOWN);
-            }
-        });
-
-        //outputfield.append("MAC: "+mac+" RSSI: "+rssi);
-        //sqLiteHandle.addRecord(currentLocation,mac,rssi);
     }
 
     @Override
     public void onGPSUpdate(Location location) {
         currentLocation = location;
-        locationfield.setText("Location: " + location.getLatitude() + "," + location.getLongitude());
+        locationfield.setText("GPS: " + location.getLatitude() + "," + location.getLongitude());
     }
+
+    private Pair<String,String> parseLine(String line) {
+        String mac = line.replaceAll(".*SA:([\\w:]+).*","$1");
+        String rssi = line.replaceAll(".*(-.*)dB signal.*", "$1");
+        return new Pair<String, String>(mac,rssi);
+    }
+
+    private void postMessage(final String message) {
+        outputfield.post(new Runnable() {
+            @Override
+            public void run() {
+                outputfield.append(message);
+                ((ScrollView)findViewById(R.id.scrollView)).fullScroll(View.FOCUS_DOWN);
+            }
+        });
+    }
+
 }

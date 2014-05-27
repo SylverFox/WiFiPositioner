@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class TcpDumpHandle extends Thread {
 
     private final String DEBUG_TAG = "TcpDumpHandle";
-    private final String tcpDumpComm = "./tcpdump-arm -l -i wlan0";
+    private final String tcpDumpComm = "./tcpdump-arm -t -q -e -s 100 -l -i wlan0";
     private final String toFolder = "cd /data/bcmon";
     private final String loadDriverComm = "sh setup.sh";
     private final String unloadDriverComm = "sh unsetup.sh";
@@ -102,7 +102,6 @@ public class TcpDumpHandle extends Thread {
     }
 
     private void stopProcess() throws IOException {
-        console.destroy();
         dataOut.close();
         dataIn.close();
         dataErr.close();

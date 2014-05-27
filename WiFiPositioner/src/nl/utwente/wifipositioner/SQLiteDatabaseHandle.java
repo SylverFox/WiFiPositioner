@@ -11,8 +11,8 @@ import android.util.Log;
  * Created by Joris on 22/05/2014.
  */
 public class SQLiteDatabaseHandle extends SQLiteOpenHelper {
-    private static final String DATABASE_NAME = "contactsManager";
-    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "CaptureDatabase";
+    private static final int DATABASE_VERSION = 5;
 
     // tables
     private static final String TABLE_CAPTUREDATA = "capturedata";
@@ -38,11 +38,14 @@ public class SQLiteDatabaseHandle extends SQLiteOpenHelper {
                 KEY_RSSI + " TEXT" +
                 ")";
         db.execSQL(query);
-
         Log.d("SQLiteDatabase","Database created: "+db.getPath());
     }
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        String query = "DELETE FROM " + TABLE_CAPTUREDATA + " WHERE 1";
+        db.execSQL(query);
+        Log.d("SQLiteDatabase","Database upgraded: "+db.getPath());
+    }
 
     public void addRecord(Location location,String mac, String rssi) {
         SQLiteDatabase db = this.getWritableDatabase();
