@@ -18,6 +18,7 @@ public class TcpDumpHandle extends Thread {
     private final String toFolder = "cd /data/bcmon";
     private final String loadDriverComm = "sh setup.sh";
     private final String unloadDriverComm = "sh unsetup.sh";
+    private String sourcefilter = "";
 
     private Process console;
     private BufferedReader dataIn;
@@ -68,6 +69,13 @@ public class TcpDumpHandle extends Thread {
         }
     }
 
+    @Deprecated
+    public void setSourcefilter(String sourcefilter) {
+        if(sourcefilter.length() > 0) {
+            this.sourcefilter = " ether " + sourcefilter;
+        }
+    }
+
     private boolean startProcess() throws IOException {
         // Create process and get SU access
         ProcessBuilder processBuilder = new ProcessBuilder("su");
@@ -84,7 +92,8 @@ public class TcpDumpHandle extends Thread {
         writeCommand(toFolder);
         writeCommand(loadDriverComm);
         writeCommand("iwconfig wlan0 mode monitor");
-        writeCommand(tcpDumpComm);
+        Log.d(DEBUG_TAG, tcpDumpComm + sourcefilter);
+        writeCommand(tcpDumpComm+sourcefilter);
 
         return true;
     }
@@ -102,6 +111,8 @@ public class TcpDumpHandle extends Thread {
     }
 
     private void stopProcess() throws IOException {
+        Log.d(DEBUG_TAG,"Stopping process");
+        console.destroy();
         dataOut.close();
         dataIn.close();
         dataErr.close();

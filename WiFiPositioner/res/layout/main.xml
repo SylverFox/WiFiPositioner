@@ -3,7 +3,7 @@
               android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
-              android:weightSum="1">
+              android:weightSum="1" android:focusable="true" android:focusableInTouchMode="true">
     <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
@@ -19,15 +19,27 @@
                 android:text="Stop capture"
                 android:id="@+id/stopcapturebutton" android:layout_gravity="center_horizontal"/>
     </LinearLayout>
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sourcefilterText" android:layout_gravity="center_horizontal" android:focusable="true"
+            android:focusableInTouchMode="true" android:singleLine="true" android:hint="Filter by MAC address"/>
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="GPS: "
             android:id="@+id/locationtextview" android:layout_gravity="center_horizontal"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/totalpacketsView" android:layout_gravity="center_horizontal"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/totalrecordsView" android:layout_gravity="center_horizontal"/>
     <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="378dp"
+            android:layout_height="325dp"
             android:id="@+id/scrollView" android:layout_gravity="center_horizontal" android:fillViewport="false">
         <TextView
                 android:layout_width="wrap_content"
