@@ -7,10 +7,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ScrollView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 
 public class MainActivity extends Activity implements View.OnClickListener,DataListener {
 
@@ -20,8 +17,12 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
 
     private TextView outputfield;
     private TextView locationfield;
+    private TextView totalpacketsView;
+    private TextView totalrecordsView;
+    private EditText sourcefilterText;
 
     private Location currentLocation;
+    private String sourcefilter = "";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,10 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
         stopcapturebutton.setOnClickListener(this);
         outputfield = (TextView)findViewById(R.id.outputfield);
         locationfield = (TextView)findViewById(R.id.locationtextview);
+        totalpacketsView = (TextView)findViewById(R.id.totalpacketsView);
+        totalrecordsView = (TextView)findViewById(R.id.totalrecordsView);
+        sourcefilterText = (EditText)findViewById(R.id.sourcefilterText);
+
     }
 
     @Override
@@ -53,9 +58,16 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
         int id = view.getId();
         switch(id) {
             case R.id.startcapturebutton:
+                String sf = sourcefilterText.getText().toString();
                 if(tcpDumpHandle == null) {
-                    tcpDumpHandle = new TcpDumpHandle(this);
-                    tcpDumpHandle.start();
+                    if(validMAC(sf)) {
+                        this.sourcefilter = sf.toLowerCase();
+                        tcpDumpHandle = new TcpDumpHandle(this);
+                        tcpDumpHandle.start();
+                    } else {
+                        Toast.makeText(getApplicationContext(),"Invalid MAC",1000).show();
+                    }
+
                 } else {
                     Toast.makeText(getApplicationContext(),"Capture already started",1000).show();
                 }
@@ -72,22 +84,69 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
         }
     }
 
-    private int i = 0;
+    private boolean validMAC(String input) {
+        if(input.length() == 0)
+            return true;
+
+        boolean output = true;
+        if(input.length() != 17)
+            output = false;
+        input = input.replaceAll(":","");
+        if(input.length() != 12)
+            output = false;
+        input = input.replaceAll("[[0-9][a-f][A-F]]*","");
+        if(input.length() != 0)
+            output = false;
+        return output;
+    }
+
+    private int packets = 0;
+    private int records = 0;
     @Override
     public void onConsoleMessage(String message) {
-        i++;
         if(message == null)
             return;
         else if(message.isEmpty())
             return;
 
+        packets++;
+
         message = message.trim();
 
         if(currentLocation != null && message.contains("signal") && message.contains("SA")) {
+
             Pair<String,String> data = parseLine(message);
-            sqLiteHandle.addRecord(currentLocation,data.first,data.second);
-            if(i%100 == 0)
+            if(sourcefilter.length() > 0) {
+                if(data.first.equals(sourcefilter)) {
+                    records++;
+                    sqLiteHandle.addRecord(currentLocation,data.first,data.second);
+                }
+            } else {
+                records++;
+                sqLiteHandle.addRecord(currentLocation,data.first,data.second);
+            }
+
+
+            if(packets%100 == 0 || packets < 10)
                 postMessage("MAC: "+data.first+" - RSSI: "+data.second+"\n");
+
+            if(records%10 == 0) {
+                totalrecordsView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        totalrecordsView.setText("Total records: " + records);
+                    }
+                });
+            }
+        }
+
+        if(packets%20 == 0) {
+            totalpacketsView.post(new Runnable() {
+                @Override
+                public void run() {
+                    totalpacketsView.setText("Total packets: " + packets);
+                }
+            });
         }
     }
 
@@ -98,7 +157,7 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
     }
 
     private Pair<String,String> parseLine(String line) {
-        String mac = line.replaceAll(".*SA:([\\w:]+).*","$1");
+        String mac = line.replaceAll(".*SA:([\\w:]+).*","$1").toLowerCase();
         String rssi = line.replaceAll(".*(-.*)dB signal.*", "$1");
         return new Pair<String, String>(mac,rssi);
     }
