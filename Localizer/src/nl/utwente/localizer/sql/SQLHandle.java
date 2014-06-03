@@ -1,21 +1,21 @@
-package main;
+package nl.utwente.localizer.sql;
 
-import nl.utwente.datatypes.DataPoint;
-import nl.utwente.datatypes.GPS;
+import nl.utwente.localizer.datatypes.DataPoint;
+import nl.utwente.localizer.datatypes.GPS;
 
 import java.sql.*;
 import java.util.ArrayList;
 
 /**
- * Created by Joris on 27/05/2014.
+ * Created by Joris on 02/06/2014.
  */
-public class SQLiteHandle {
+public class SQLHandle {
     private Connection c = null;
 
-    public SQLiteHandle(String databaseFile) {
+    public SQLHandle(String databaseFile) {
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:"+databaseFile);
+            c = DriverManager.getConnection("jdbc:sqlite:" + databaseFile);
         } catch ( Exception e ) {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
         }
