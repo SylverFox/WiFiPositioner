@@ -9,6 +9,11 @@ public class GPS {
 
     public GPS() {}
 
+    public GPS(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
     public Point getPoint() {
         return new Point(latitude,longitude);
     }

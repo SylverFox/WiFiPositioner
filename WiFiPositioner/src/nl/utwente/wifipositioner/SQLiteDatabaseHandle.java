@@ -58,4 +58,10 @@ public class SQLiteDatabaseHandle extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void resetDB() {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "DELETE FROM " + TABLE_CAPTUREDATA + " WHERE 1";
+        db.execSQL(query);
+        Log.d("SQLiteDatabase","Database emptied");
+    }
 }
