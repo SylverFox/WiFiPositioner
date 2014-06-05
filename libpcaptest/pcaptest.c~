@@ -1,0 +1,47 @@
+/*libpcap test program*/
+#include <pcap.h> 
+#include <string.h> 
+#include <stdlib.h> 
+
+#define MAXBYTES2CAPTURE 2048 
+
+int main(int argc, char *argv[] ){ 
+    
+ int i=0, count=0; 
+ pcap_t *descr = NULL; 
+ char errbuf[PCAP_ERRBUF_SIZE], *device=NULL; 
+ memset(errbuf,0,PCAP_ERRBUF_SIZE); 
+
+ if( argc > 1){  /* If user supplied interface name, use it. */
+    device = argv[1];
+ }
+ else{  /* Get the name of the first device suitable for capture */ 
+
+    if ( (device = pcap_lookupdev(errbuf)) == NULL){
+        fprintf(stderr, "ERROR: %s\n", errbuf);
+        exit(1);
+    }
+ }
+
+ printf("Opening device %s\n", device); 
+ 
+ /* Open device in promiscuous mode */ 
+ if ( (descr = pcap_open_live(device, MAXBYTES2CAPTURE, 1,  512, errbuf)) == NULL){
+    fprintf(stderr, "ERROR: %s\n", errbuf);
+    exit(1);
+ }
+
+ /* datalink types */	
+ int *dlt_buf;         /* array of supported data link types */
+ int num;              /* number of supported link type */
+ int x;                /* counter for for loop */
+
+ num = pcap_list_datalinks(handle, &dlt_buf);
+
+ for (i=0; i<num; x++) {
+     printf("%d - %s - %s\n",dlt_buf[i],
+               pcap_datalink_val_to_name(dlt_buf[i]),
+               pcap_datalink_val_to_description(dlt_buf[i]));
+  }
+
+}

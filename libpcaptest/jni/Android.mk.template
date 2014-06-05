@@ -3,8 +3,8 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS) 
 # give module name
 
-LOCAL_MODULE := pcaptest  
-LOCAL_SRC_FILES := pcaptest.c
+LOCAL_MODULE := simple_sniffer  
+LOCAL_SRC_FILES := simplesniffer.c
 # list your C files to compile
 LOCAL_C_INCLUDES := libpcap2
 LOCAL_STATIC_LIBRARIES := libpcap

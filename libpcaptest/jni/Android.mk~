@@ -3,10 +3,10 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS) 
 # give module name
 
-LOCAL_MODULE := simple_sniffer  
-LOCAL_SRC_FILES := simplesniffer.c
+LOCAL_MODULE := pcaptest  
+LOCAL_SRC_FILES := pcaptest.c
 # list your C files to compile
-LOCAL_C_INCLUDES := platform_external_libpcap
+LOCAL_C_INCLUDES := libpcap
 LOCAL_STATIC_LIBRARIES := libpcap
 LOCAL_LDLIBS := -ldl -llog
 
@@ -14,4 +14,4 @@ LOCAL_LDLIBS := -ldl -llog
 
 include $(BUILD_EXECUTABLE)
 
-include platform_external_libpcap/Android.mk
+include libpcap/Android.mk

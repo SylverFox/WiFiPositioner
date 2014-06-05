@@ -1,0 +1,8 @@
+To capture wifi-packets including radio information, use the following steps:
+
+1. Open the capture device with libpcap
+2. Set the datalink type to radiotap.
+3. Capture packets and hand them to a process packet function.
+4. Extract the radiotap header using pointer magic.
+5. With the information obtained from the radiotap header, extract the rest of the radiotap information. (see radioparser.c)
+6. Extract the source MAC from the encapsulated ethernet frame (10 bytes after the end of the radiotap data)
