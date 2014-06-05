@@ -37,6 +37,8 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
         startcapturebutton.setOnClickListener(this);
         Button stopcapturebutton = (Button)findViewById(R.id.stopcapturebutton);
         stopcapturebutton.setOnClickListener(this);
+        Button resetdbbutton = (Button)findViewById(R.id.resetdb);
+        resetdbbutton.setOnClickListener(this);
         outputfield = (TextView)findViewById(R.id.outputfield);
         locationfield = (TextView)findViewById(R.id.locationtextview);
         totalpacketsView = (TextView)findViewById(R.id.totalpacketsView);
@@ -78,6 +80,11 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
                     tcpDumpHandle.shutdown();
                 }
                 tcpDumpHandle = null;
+                break;
+            case R.id.resetdb:
+                if(sqLiteHandle != null) {
+                    sqLiteHandle.resetDB();
+                }
                 break;
             default:
                 break;
