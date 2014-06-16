@@ -1,10 +1,7 @@
 package nl.utwente.localizer.main;
 
 import javafx.util.Pair;
-import nl.utwente.localizer.datatypes.DataPoint;
-import nl.utwente.localizer.datatypes.GPS;
-import nl.utwente.localizer.datatypes.Node;
-import nl.utwente.localizer.datatypes.Point;
+import nl.utwente.localizer.datatypes.*;
 
 import java.util.ArrayList;
 
@@ -24,28 +21,33 @@ public class Algorithms {
         return densityIndex;
     }
 
-    public static double averageDensity(ArrayList<Point> points) {
+    public static DensityMap averageDensity(ArrayList<Point> points) {
+        DensityMap out = new DensityMap();
         double totalDensity = 0;
         for(Point p : points) {
             ArrayList<Point> usedList = (ArrayList<Point>) points.clone();
             usedList.remove(p);
             double density = density(p,usedList);
             totalDensity += density;
+            out.put(p,density);
         }
         double avgDensity = totalDensity / points.size();
-        return avgDensity;
+        out.setAverageDensity(avgDensity);
+        return out;
     }
 
     public static ArrayList<Point> determineIntersectionCandidates(ArrayList<Node> nodeList) {
-        ArrayList<Point> output = new ArrayList<>();
-        for(int i = 0; i < nodeList.size() - 2; i++) {
-            for(int j = i + 1; j < nodeList.size() - 1; j++) {
+        PointArrayList output = new PointArrayList();
+        for(int i = 0; i < nodeList.size() - 1; i++) {
+            for(int j = i + 1; j < nodeList.size(); j++) {
                 Pair<Point,Point> candidates = intersect(nodeList.get(i),nodeList.get(j));
                 if(candidates != null) {
                     if(candidates.getKey() != null)
-                        output.add(candidates.getKey());
+                        if(!output.contains(candidates.getKey()))
+                            output.add(candidates.getKey());
                     if(candidates.getValue() != null)
-                        output.add(candidates.getValue());
+                        if(!output.contains(candidates.getValue()))
+                            output.add(candidates.getValue());
                 }
             }
         }

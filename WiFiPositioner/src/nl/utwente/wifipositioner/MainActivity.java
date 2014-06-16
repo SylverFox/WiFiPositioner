@@ -84,6 +84,7 @@ public class MainActivity extends Activity implements View.OnClickListener,DataL
             case R.id.resetdb:
                 if(sqLiteHandle != null) {
                     sqLiteHandle.resetDB();
+                    Toast.makeText(getApplicationContext(),"Database emptied",1000).show();
                 }
                 break;
             default:

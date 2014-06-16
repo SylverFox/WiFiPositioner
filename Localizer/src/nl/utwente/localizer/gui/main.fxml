@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Pane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="nl.utwente.localizer.gui.Main">
+   <children>
+      <ImageView fx:id="mapsView" fitHeight="600.0" fitWidth="800.0" pickOnBounds="true" preserveRatio="true" />
+      <ComboBox fx:id="macChoiceBox" layoutX="14.0" layoutY="31.0" prefWidth="150.0" promptText="MAC address" />
+      <Button fx:id="runButton" layoutX="495.0" layoutY="31.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="55.0" text="Run" />
+      <Label layoutX="14.0" layoutY="14.0" prefHeight="17.0" prefWidth="150.0" text="MAC address" />
+      <Label layoutX="174.0" layoutY="14.0" prefHeight="17.0" prefWidth="150.0" text="Map type" />
+      <ComboBox fx:id="terrainChoiceBox" layoutX="174.0" layoutY="31.0" prefWidth="150.0" promptText="Map type" />
+      <Label layoutX="335.0" layoutY="14.0" prefHeight="17.0" prefWidth="62.0" text="Zoom level" />
+      <Slider fx:id="zoomSlider" layoutX="336.0" layoutY="37.0" majorTickUnit="2.0" max="20.0" minorTickCount="1" prefHeight="14.0" prefWidth="150.0" showTickMarks="true" snapToTicks="true" value="20.0" />
+   </children>
+</Pane>
