@@ -1,6 +1,6 @@
 package nl.utwente.localizer.gui;
 
-import nl.utwente.localizer.Tools.AreaMapper;
+import nl.utwente.localizer.tools.AreaMapper;
 import nl.utwente.localizer.datatypes.Area;
 import nl.utwente.localizer.datatypes.Node;
 import nl.utwente.localizer.datatypes.Point;

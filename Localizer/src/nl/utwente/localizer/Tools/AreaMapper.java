@@ -1,4 +1,4 @@
-package nl.utwente.localizer.Tools;
+package nl.utwente.localizer.tools;
 
 import nl.utwente.localizer.datatypes.Area;
 import nl.utwente.localizer.datatypes.Node;

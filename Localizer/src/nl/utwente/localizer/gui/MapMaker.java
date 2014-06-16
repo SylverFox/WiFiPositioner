@@ -22,8 +22,9 @@ public class MapMaker {
 
     public static final int STYLE_RED = 0;
     public static final int STYLE_BLUE = 1;
+    public static final int STYLE_GREEN = 2;
 
-    private static final int MAX_MARKERS = 80;
+    private static final int MAX_MARKERS = 75;
 
     private String MAP_TYPE = "roadmap";
     private int ZOOM_LEVEL = 20;
@@ -64,6 +65,7 @@ public class MapMaker {
 
         String markerBase1 = "&markers=size:tiny|color:red|";
         String markerBase2 = "&markers=size:mid|color:blue|";
+        String markerBase3 = "&markers=size:mid|color:green|";
         int displayedMarkers = 0;
         for(Map.Entry<GPS,Integer> marker : markers.entrySet()) {
             GPS loc = marker.getKey().trim(8);
@@ -74,11 +76,14 @@ public class MapMaker {
                 }
             } else if (marker.getValue() == STYLE_BLUE) {
                 markerBase2 += loc.latitude + "," + loc.longitude + "|";
+            } else if (marker.getValue() == STYLE_GREEN) {
+                markerBase3 += loc.latitude + "," + loc.longitude + "|";
             }
         }
         markerBase1 = markerBase1.substring(0,markerBase1.length()-1);
         markerBase2 = markerBase2.substring(0,markerBase2.length()-1);
-        url += markerBase1 + markerBase2;
+        markerBase3 = markerBase3.substring(0,markerBase3.length()-1);
+        url += markerBase1 + markerBase2 + markerBase3;
         System.out.println(url);
         HttpURLConnection conn = null;
         try {

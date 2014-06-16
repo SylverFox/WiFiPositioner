@@ -1,4 +1,4 @@
-package nl.utwente.localizer.Tools;
+package nl.utwente.localizer.tools;
 
 /**
  * Created by Joris on 03/06/2014.

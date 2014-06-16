@@ -12,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
@@ -37,6 +38,7 @@ public class Main extends Application implements Initializable,LocalizerProgress
     @FXML private ComboBox terrainChoiceBox;
     @FXML private ImageView mapsView;
     @FXML private Slider zoomSlider;
+    @FXML private TextField actualPosField;
 
     private Localizer localizer;
     private MapMaker mapMaker;
@@ -55,6 +57,7 @@ public class Main extends Application implements Initializable,LocalizerProgress
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         localizer = new Localizer(this);
+        localizer.setDebug(true);
         mapMaker = new MapMaker((int)mapsView.getFitWidth(),(int)mapsView.getFitHeight());
 
         ArrayList<String> macs = localizer.getMacs();
@@ -85,6 +88,13 @@ public class Main extends Application implements Initializable,LocalizerProgress
 
             int selectedMACID = macChoiceBox.getSelectionModel().selectedIndexProperty().getValue();
             if(selectedMACID >= 0) {
+                String actualPos = actualPosField.getText();
+                String[] latlong = actualPos.split(",");
+                if(latlong.length == 2) {
+                    GPS actPos = new GPS(Double.parseDouble(latlong[0]),Double.parseDouble(latlong[1]));
+                    mapMaker.addMarker(actPos,MapMaker.STYLE_GREEN);
+                }
+
                 String selectedMac = macs.get(selectedMACID);
                 localizer.setTarget(selectedMac);
                 if(!localizer.isRunning())

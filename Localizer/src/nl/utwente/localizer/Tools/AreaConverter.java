@@ -1,4 +1,4 @@
-package nl.utwente.localizer.Tools;
+package nl.utwente.localizer.tools;
 
 import nl.utwente.localizer.datatypes.GPS;
 import nl.utwente.localizer.datatypes.Point;

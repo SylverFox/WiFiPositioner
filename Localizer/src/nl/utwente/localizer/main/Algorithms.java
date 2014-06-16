@@ -4,6 +4,8 @@ import javafx.util.Pair;
 import nl.utwente.localizer.datatypes.*;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by Joris on 02/06/2014.
@@ -21,12 +23,15 @@ public class Algorithms {
         return densityIndex;
     }
 
-    public static DensityMap averageDensity(ArrayList<Point> points) {
+    public static DensityMap averageDensity(ArrayList<Point> points, int numberOfNearestNeighbours) {
         DensityMap out = new DensityMap();
         double totalDensity = 0;
         for(Point p : points) {
-            ArrayList<Point> usedList = (ArrayList<Point>) points.clone();
-            usedList.remove(p);
+            //calculate nearest neighbours
+            ArrayList<Point> pointsnop = (ArrayList<Point>) points.clone();
+            pointsnop.remove(p);
+            ArrayList<Point> usedList = nearestNeighbours(p,pointsnop,numberOfNearestNeighbours);
+
             double density = density(p,usedList);
             totalDensity += density;
             out.put(p,density);
@@ -36,7 +41,27 @@ public class Algorithms {
         return out;
     }
 
+    public static ArrayList<Point> nearestNeighbours(Point p, ArrayList<Point> plist, int K) {
+        Map<Double,Point> distances = new TreeMap<>();
+        for(Point pl : plist) {
+            distances.put(distance(p,pl),pl);
+        }
+        ArrayList<Point> out = new ArrayList<>();
+        int i = 0;
+        for(Map.Entry<Double,Point> e : distances.entrySet()) {
+            out.add(e.getValue());
+            i++;
+            if(i == 10)
+                break;
+        }
+        return out;
+    }
+
     public static ArrayList<Point> determineIntersectionCandidates(ArrayList<Node> nodeList) {
+        int N = nodeList.size();
+        long totalCalc = binomial(N,2);
+        long timestart = System.currentTimeMillis();
+        int calcDone = 0;
         PointArrayList output = new PointArrayList();
         for(int i = 0; i < nodeList.size() - 1; i++) {
             for(int j = i + 1; j < nodeList.size(); j++) {
@@ -49,8 +74,24 @@ public class Algorithms {
                         if(!output.contains(candidates.getValue()))
                             output.add(candidates.getValue());
                 }
+
+                calcDone++;
+                if(calcDone == 1) {
+                    System.out.print("0%");
+                }else if(totalCalc / 4 == calcDone) {
+                    System.out.print(" - 25%");
+                }else if(totalCalc / 2 == calcDone) {
+                    System.out.print(" - 50%");
+                } else if(totalCalc / 4 * 3 == calcDone) {
+                    System.out.print(" - 75%");
+                } else if(calcDone == totalCalc) {
+                    System.out.print(" - 100%");
+                }
             }
         }
+        long elapsed = System.currentTimeMillis() - timestart;
+        System.out.print(" - time taken: "+elapsed/1000);
+        System.out.println();
         return output;
     }
 
@@ -94,7 +135,7 @@ public class Algorithms {
     }
 
     public static double distance(DataPoint A, DataPoint B) {
-        return distanceGPS(A.gps,B.gps);
+        return distanceGPS(A.gps, B.gps);
     }
 
     public static double distance(Point A, Point B) {
@@ -125,14 +166,12 @@ public class Algorithms {
         return new Point(avgX,avgY);
     }
 
-    public static int totalGroups(int nodes) {
-        return factorial(nodes)/(factorial(2)*factorial(nodes-2));
+    static long binomial(final int N, final int K) {
+        long ret = 1;
+        for (int k = 0; k < K; k++) {
+            ret *= (N-k) / (k+1);
+        }
+        return ret;
     }
 
-    public static int factorial(int m) {
-        if(m == 1)
-            return 1;
-        else
-            return m * factorial(m-1);
-    }
 }

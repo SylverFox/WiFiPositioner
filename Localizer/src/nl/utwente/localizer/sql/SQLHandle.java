@@ -23,7 +23,7 @@ public class SQLHandle {
 
     public ArrayList<String> getMacs() throws SQLException {
         Statement stat = c.createStatement();
-        ResultSet rs = stat.executeQuery("SELECT mac FROM capturedata GROUP BY mac HAVING count(mac) > 1 AND count(mac) < 100");
+        ResultSet rs = stat.executeQuery("SELECT mac FROM capturedata GROUP BY mac HAVING count(mac) > 1");
         ArrayList<String> output = new ArrayList<>();
         while(rs.next()) {
             String mac = rs.getString("mac");

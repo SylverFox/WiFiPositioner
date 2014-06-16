@@ -1,8 +1,8 @@
 package nl.utwente.localizer.main;
 
-import nl.utwente.localizer.Tools.AreaConverter;
-import nl.utwente.localizer.Tools.AreaMapper;
-import nl.utwente.localizer.Tools.RSSIConverter;
+import nl.utwente.localizer.tools.AreaConverter;
+import nl.utwente.localizer.tools.AreaMapper;
+import nl.utwente.localizer.tools.RSSIConverter;
 import nl.utwente.localizer.datatypes.*;
 import nl.utwente.localizer.sql.ImportDB;
 import nl.utwente.localizer.sql.SQLHandle;
@@ -24,6 +24,8 @@ public class Localizer extends Thread {
     private LocalizerProgressListener progressListener;
     private String target;
     private boolean running;
+    private int dataPointLimit = -1;
+    private boolean debug = false;
 
     public Localizer(LocalizerProgressListener progressListener) {
         this.progressListener = progressListener;
@@ -43,7 +45,6 @@ public class Localizer extends Thread {
             } else {
                 running = true;
                 calculatePosition(target);
-                target = null;
             }
         }
     }
@@ -56,19 +57,33 @@ public class Localizer extends Thread {
         this.target = target;
     }
 
+    public void setDebug(boolean debug) { this.debug = debug; }
+
     private void calculatePosition(String mac) {
         // mac laptop: 00:21:6A:5B:AA:20
         // mac phone : bc:cf:cc:73:71:8d
-        Log("Calculating position for target: "+mac);
-        Log("Getting data points");
+        if(debug) {
+            Log("Calculating position for target: " + mac);
+            Log("Getting data points");
+        }
         ArrayList<DataPoint> dataPoints = getDataPoints(mac);
         if(dataPoints == null || dataPoints.size() == 0) {
-            Log("Unable to get data points or no data points available");
+            if(debug)
+                Log("Unable to get data points or no data points available");
+            target = null;
             return;
         }
-        Log("Total data points: "+dataPoints.size());
+        if(dataPointLimit > 0) {
+            for(int i = 1; i <= dataPointLimit; i++) {
+                if(i > dataPointLimit)
+                    dataPoints.remove(i-1);
+            }
+        }
+        if(debug) {
+            Log("Total data points: " + dataPoints.size());
 
-        Log("Preparing area conversion");
+            Log("Preparing area conversion");
+        }
         ArrayList<GPS> gpsList = new ArrayList<>();
         for(DataPoint dp : dataPoints) {
             gpsList.add(dp.gps);
@@ -82,8 +97,8 @@ public class Localizer extends Thread {
                 progressListener.newMarker(gps);
         }
 
-
-        Log("Mapping coordinates over 2d plane and converting RSSI values");
+        if(debug)
+            Log("Mapping coordinates over 2d plane and converting RSSI values");
         ArrayList<Node> nodeList = new ArrayList<>();
         for(DataPoint dp : dataPoints) {
             Point p = areaConverter.gpsToPlane(dp.gps);
@@ -98,37 +113,49 @@ public class Localizer extends Thread {
             if(progressListener != null)
                 progressListener.newNode(n);
         }
-
-        Log("Determining candidates");
+        if(debug)
+            Log("Determining candidates");
         ArrayList<Point> candidates = Algorithms.determineIntersectionCandidates(nodeList);
-        Log("Total candidate points: "+candidates.size());
+        if(debug)
+            Log("Total candidate points: "+candidates.size());
         if(candidates.size()==0) {
-            Log("No candidates for localization found!");
+            if(debug)
+                Log("No candidates for localization found!");
+            target = null;
             return;
         } else if(candidates.size()==1) {
             //done
             progressListener.newResult(areaConverter.planeToGPS(candidates.get(0)),candidates.get(0));
+            target = null;
             return;
         }
 
-        Log("Calculating average density");
-        DensityMap densityMap = Algorithms.averageDensity(candidates);
+        if(debug)
+            Log("Calculating average density");
+        int nearestNeighbours = (candidates.size() / 2) - 1;
+        DensityMap densityMap = Algorithms.averageDensity(candidates,nearestNeighbours);
         double avgDensity = densityMap.getAverageDensity();
-        Log("Average node density: "+avgDensity);
+        if(debug) {
+            Log("Average node density: " + avgDensity);
 
-        Log("Determining valid candidates");
+            Log("Determining valid candidates");
+        }
         ArrayList<Point> closeCandidates = new ArrayList<>();
         for(Map.Entry<Point,Double> entry : densityMap.entrySet()) {
             if(entry.getValue() > avgDensity)
                 closeCandidates.add(entry.getKey());
         }
-        Log("Selected candidates: "+closeCandidates.size());
+        if(debug) {
+            Log("Selected candidates: " + closeCandidates.size());
 
-        Log("Calculating estimated location");
+            Log("Calculating estimated location");
+        }
         Point estimatedLocation = Algorithms.estimateLocation(closeCandidates);
         GPS gpsLocation = areaConverter.planeToGPS(estimatedLocation);
+        if(debug)
+            Log("Estimated location: "+gpsLocation.latitude+","+gpsLocation.longitude);
 
-        Log("Estimated location: "+gpsLocation.latitude+","+gpsLocation.longitude);
+        target = null;
 
         if(progressListener != null)
             progressListener.newResult(gpsLocation,estimatedLocation);
@@ -144,7 +171,7 @@ public class Localizer extends Thread {
         return out;
     }
 
-    private ArrayList<DataPoint> getDataPoints(String mac) {
+    public ArrayList<DataPoint> getDataPoints(String mac) {
         ArrayList<DataPoint> out = null;
         try {
             out = sqlHandle.getDataPoints(mac.toLowerCase());
@@ -154,4 +181,7 @@ public class Localizer extends Thread {
         return out;
     }
 
+    public void setLimit(int currentLimit) {
+        dataPointLimit = currentLimit;
+    }
 }

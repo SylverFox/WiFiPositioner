@@ -14,10 +14,11 @@ import java.util.ArrayList;
 public class TcpDumpHandle extends Thread {
 
     private final String DEBUG_TAG = "TcpDumpHandle";
-    private final String tcpDumpComm = "./tcpdump-arm -t -q -e -s 100 -l -i wlan0";
+    private final String setMonitorComm = "iwconfig wlan0 mode monitor";
+    private final String setChannelComm = "iwconfig wlan0 channel 6";
+    private final String tcpDumpComm = "./tcpdump2 -tqelnU -s 100 -i wlan0";
     private final String toFolder = "cd /data/bcmon";
     private final String loadDriverComm = "sh setup.sh";
-    private final String unloadDriverComm = "sh unsetup.sh";
     private String sourcefilter = "";
 
     private Process console;
@@ -91,7 +92,8 @@ public class TcpDumpHandle extends Thread {
         // run setup scripts
         writeCommand(toFolder);
         writeCommand(loadDriverComm);
-        writeCommand("iwconfig wlan0 mode monitor");
+        writeCommand(setMonitorComm);
+        writeCommand(setChannelComm);
         Log.d(DEBUG_TAG, tcpDumpComm + sourcefilter);
         writeCommand(tcpDumpComm+sourcefilter);
 
@@ -116,6 +118,7 @@ public class TcpDumpHandle extends Thread {
         dataOut.close();
         dataIn.close();
         dataErr.close();
+
     }
 
     public void shutdown() {
